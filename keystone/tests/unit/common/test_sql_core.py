@@ -52,3 +52,21 @@ class TestModelDictMixin(unit.BaseTestCase):
         # NOTE(notmorgan): This is currently explicitly harmless as this does
         # not actually use SQL-Alchemy.
         self.assertEqual(expected, m.to_dict())
+
+
+class TestModelDict(ModelBase, sql.DictBase):
+    __tablename__ = 'testmodeldict'
+    attributes = ['id', 'text']
+    id = sql.Column(sql.String(64), primary_key=True)
+    text = sql.Column(sql.String(64), nullable=False)
+    extra = sql.Column(sql.JsonBlob())
+
+
+class TestModelDictBase(unit.BaseTestCase):
+
+    def test_creating_a_model_instance_from_a_dict_with_null_extra(self):
+        m = TestModelDict.from_dict(
+            {'id': utils.new_uuid(), 'text': utils.new_uuid(),
+             'key1': 'val1', 'key2': None, 'key3': 'val3', 'key4': None})
+        expected_extra = {'key1': 'val1', 'key3': 'val3'}
+        self.assertEqual(expected_extra, m.extra)

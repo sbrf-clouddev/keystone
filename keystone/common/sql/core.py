@@ -148,8 +148,13 @@ class ModelDictMixinWithExtras(models.ModelBase):
             # programmers NOT end users.
             raise AttributeError(cls._msg)  # no qa
 
-        new_d['extra'] = {k: new_d.pop(k) for k in d.keys()
-                          if k not in cls.attributes and k != 'extra'}
+        extra = {k: new_d.pop(k) for k in six.iterkeys(d)
+                 if k not in cls.attributes and k != 'extra'}
+
+        # filter extra properties with None values,
+        # because storing them is meaningless
+        filtered_extra = {k: v for k, v in extra.items() if v is not None}
+        new_d['extra'] = filtered_extra
 
         return cls(**new_d)
 
